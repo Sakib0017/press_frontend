@@ -1,8 +1,12 @@
 import axios from 'axios';
 
-// Vercel: set VITE_API_URL to backend URL (e.g. https://press-backend.vercel.app)
-// Local dev: leave empty to use Vite proxy (/api -> http://localhost:5000)
-const baseURL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api` : '/api';
+// Vercel: MUST set VITE_API_URL to backend URL (e.g. https://press-backend.vercel.app)
+// If empty, relative /api will hit FRONTEND domain -> Vercel static returns 405 for POST
+const raw = import.meta.env.VITE_API_URL?.trim();
+if (!raw && typeof window !== 'undefined' && window.location.hostname.endsWith('vercel.app')) {
+  console.warn('VITE_API_URL missing! Frontend is calling relative /api on static hosting -> 405. Set VITE_API_URL in Vercel frontend env vars to https://<backend>.vercel.app');
+}
+const baseURL = raw ? `${raw.replace(/\/$/, '')}/api` : '/api';
 
 const api = axios.create({
   baseURL,

@@ -27,7 +27,7 @@ export default function Login() {
           <h1 className="text-4xl font-bold text-cyan-500">Homecare</h1>
           <p className="text-3xl text-gray-600 mt-2">To Touch Billion Lives <span className="text-cyan-500 font-bold border-b-4 border-orange-400">Positively</span></p>
         </div>
-        <img src="https://via.placeholder.com/400x300" alt="Healthcare Illustration" className="max-w-md" />
+        <img src="https://placehold.co/400x300/e0f2fe/0e7490?text=Homecare" alt="Healthcare Illustration" className="max-w-md rounded-xl" onError={(e)=>e.target.style.display='none'} />
         <div className="absolute bottom-8 text-center">
           <p className="text-xs text-gray-400 uppercase tracking-widest">Powered By:</p>
           <p className="font-bold text-gray-700 italic">Homecare</p>
@@ -42,11 +42,11 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="relative">
               <label className="absolute -top-2 left-3 bg-white px-1 text-xs text-blue-500">Email Address</label>
-              <input type="email" value={email} onChange={e=>setEmail(e.target.value)} required className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-blue-400 bg-yellow-50 outline-none" />
+              <input type="email" name="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} required className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-blue-400 bg-yellow-50 outline-none" />
             </div>
             <div className="relative">
               <label className="absolute -top-2 left-3 bg-white px-1 text-xs text-blue-500">Password</label>
-              <input type="password" value={password} onChange={e=>setPassword(e.target.value)} required className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-blue-400 bg-yellow-50 outline-none" />
+              <input type="password" name="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-blue-400 bg-yellow-50 outline-none" />
             </div>
             <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded transition duration-200 shadow-lg">Login</button>
           </form>

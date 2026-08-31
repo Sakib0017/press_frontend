@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Optional: keep same antialiasing as legacy */
+body { -webkit-font-smoothing: antialiased; }
