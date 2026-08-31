@@ -16,7 +16,14 @@ export default function Login() {
       await login(email, password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Login failed');
+      // Prefer friendlyMessage from api interceptor for 405, else server message
+      const msg = err.friendlyMessage || err.response?.data?.message || err.response?.data?.detail || err.message || 'Login failed';
+      // Show 405-specific guidance inline
+      if (err.response?.status === 405) {
+        setError(msg + ' — Deploy backend first, then set VITE_API_URL in frontend Vercel env.');
+      } else {
+        setError(msg);
+      }
     }
   };
 
