@@ -1,17 +1,31 @@
 import axios from 'axios';
 
-// Resolve backend URL: VITE_API_URL at build time, else fallback to same origin's backend inference
-// On Vercel frontend without VITE_API_URL, relative /api hits static hosting -> 405
-// We now detect this and provide clear error instead of silent 405
+// Resolve backend URL: VITE_API_URL at build time, else fallback
+// On Vercel frontend without VITE_API_URL, relative /api hits static hosting -> 405 or CORS error
+// Your live URLs: frontend https://press-frontend-two.vercel.app , backend https://press-backend-alpha.vercel.app
 const raw = import.meta.env.VITE_API_URL?.trim();
 
-// Heuristic fallback: if VITE_API_URL missing and on vercel.app, try to infer backend hostname
-// e.g. press-frontend-two.vercel.app -> press-backend-two.vercel.app
+// Known mappings for this project — prevents inferring wrong backend (two vs alpha)
+const KNOWN_BACKEND = 'https://press-backend-alpha.vercel.app';
+const KNOWN_FRONTEND = 'press-frontend-two.vercel.app';
+
 function inferBackendUrl() {
   if (typeof window === 'undefined') return null;
   const host = window.location.hostname;
+  // Exact known mapping: press-frontend-two -> press-backend-alpha (NOT press-backend-two)
+  if (host === KNOWN_FRONTEND) {
+    return KNOWN_BACKEND;
+  }
   if (host.includes('frontend')) {
-    return `${window.location.protocol}//${host.replace('frontend', 'backend')}`;
+    // Generic fallback: frontend -> backend (but will be wrong if backend name is alpha not two)
+    // Prefer KNOWN_BACKEND for this project
+    const generic = `${window.location.protocol}//${host.replace('frontend', 'backend')}`;
+    // If generic !== KNOWN_BACKEND, warn and use known
+    if (host === 'press-frontend-two.vercel.app' && generic !== KNOWN_BACKEND) {
+      console.warn(`Inferred backend ${generic} does not match known backend ${KNOWN_BACKEND}. Using known backend. Please set VITE_API_URL=${KNOWN_BACKEND} in Vercel env.`);
+      return KNOWN_BACKEND;
+    }
+    return generic;
   }
   return null;
 }
@@ -20,18 +34,19 @@ let baseURL;
 let backendHint = null;
 
 if (raw) {
-  baseURL = `${raw.replace(/\/$/, '')}/api`;
+  // Normalize: remove trailing slash, ensure no /api double
+  const cleaned = raw.replace(/\/$/, '').replace(/\/api$/, '');
+  baseURL = `${cleaned}/api`;
 } else {
   const inferred = inferBackendUrl();
   if (inferred) {
-    // Use inferred as last resort, but warn that VITE_API_URL should be set explicitly
-    console.warn(`VITE_API_URL missing! Inferring backend as ${inferred}/api. Set VITE_API_URL in Vercel frontend env vars to https://<backend>.vercel.app for reliability.`);
-    baseURL = `${inferred}/api`;
+    console.warn(`VITE_API_URL missing! Using fallback backend ${inferred}/api. FIX: Vercel Frontend -> Settings -> Environment Variables -> VITE_API_URL=${KNOWN_BACKEND} -> Redeploy`);
+    baseURL = `${inferred.replace(/\/$/, '')}/api`;
     backendHint = inferred;
   } else {
     baseURL = '/api';
     if (typeof window !== 'undefined' && window.location.hostname.endsWith('vercel.app')) {
-      console.error('VITE_API_URL missing! Frontend is calling relative /api on static hosting -> 405. Set VITE_API_URL in Vercel frontend env vars to https://<backend>.vercel.app');
+      console.error(`VITE_API_URL missing! Frontend is calling relative /api on static hosting -> 405/CORS. Set VITE_API_URL=${KNOWN_BACKEND} in Vercel frontend env vars`);
     }
   }
 }
@@ -47,16 +62,30 @@ api.interceptors.request.use(config => {
   return config;
 });
 
-// Add response interceptor to give friendly message on 405 (frontend static 405)
+// Response interceptor: friendly messages for 405 and CORS/network errors
 api.interceptors.response.use(
   response => response,
   error => {
-    if (error.response?.status === 405 && error.config?.url?.includes('/api/auth/login')) {
+    const cfg = error.config || {};
+    const url = `${cfg.baseURL || ''}${cfg.url || ''}`;
+    const isLogin = cfg.url?.includes('/api/auth/login') || cfg.url?.includes('/auth/login');
+    // 405 = frontend static hosting (VITE_API_URL missing)
+    if (error.response?.status === 405 && isLogin) {
       const msg = backendHint
-        ? `Login failed 405: Frontend called ${error.config.baseURL}${error.config.url} but got 405. VITE_API_URL was missing, inferred backend ${backendHint} may be wrong. Fix: Vercel Frontend -> Settings -> Environment Variables -> VITE_API_URL=https://<YOUR-BACKEND>.vercel.app -> Redeploy`
-        : `Login failed 405: Backend not reachable at ${error.config.baseURL}${error.config.url}. This happens when frontend's VITE_API_URL is missing (calls relative /api on static hosting) or backend not deployed. Fix: Deploy backend separately, then set VITE_API_URL=https://<backend>.vercel.app in frontend env & redeploy. Backend must be at ${typeof window !== 'undefined' ? window.location.origin.replace('frontend','backend') : 'https://<backend>.vercel.app'}/api`;
+        ? `Login failed 405: Frontend called ${url} but got 405. Inferred backend ${backendHint} may be wrong. Fix: Vercel Frontend -> Settings -> Environment Variables -> VITE_API_URL=https://press-backend-alpha.vercel.app -> Redeploy`
+        : `Login failed 405: Backend not reachable at ${url}. Frontend called relative /api on static hosting. Fix: Vercel Frontend env VITE_API_URL=https://press-backend-alpha.vercel.app -> Redeploy`;
       console.error(msg);
       error.friendlyMessage = msg;
+    }
+    // CORS / network failure (ERR_FAILED, no response)
+    if (!error.response && error.message === 'Network Error' && isLogin) {
+      const msg = `Login Network/CORS error: Frontend ${typeof window !== 'undefined' ? window.location.origin : ''} -> ${url} blocked by CORS or backend down. Causes: 1) Frontend VITE_API_URL is https://press-backend-two.vercel.app (WRONG) should be https://press-backend-alpha.vercel.app  2) Backend CORS not allowing ${typeof window !== 'undefined' ? window.location.origin : 'frontend'}  3) Backend not deployed. Fix: Set VITE_API_URL=https://press-backend-alpha.vercel.app in Vercel Frontend and ensure Backend FRONTEND_URL=https://press-frontend-two.vercel.app -> Redeploy both`;
+      console.error(msg);
+      error.friendlyMessage = msg;
+    }
+    // Also handle CORS preflight explicit: error.response missing headers case
+    if (error.message?.includes('CORS') || error.code === 'ERR_NETWORK') {
+      console.error(`CORS/Network detail: baseURL=${baseURL} hint=${backendHint} raw=${raw}`);
     }
     return Promise.reject(error);
   }
