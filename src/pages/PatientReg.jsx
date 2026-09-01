@@ -32,15 +32,15 @@ export default function PatientReg() {
       <Navbar />
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
         <Header />
-        <section className="bg-white border-b border-slate-100 px-5 py-5 flex flex-col sm:flex-row justify-between gap-4 sm:items-center">
-          <div>
-            <h1 className="text-xl font-black text-slate-900 tracking-tight">Patient Registration</h1>
-            <p className="text-xs text-slate-400 mt-1">Register a new patient for <span className="font-bold text-slate-600">{doctor?.name}</span></p>
+        <section className="bg-white border-b border-slate-100 px-3 sm:px-5 py-4 sm:py-5 flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 sm:items-center shrink-0">
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">Patient Registration</h1>
+            <p className="text-[11px] sm:text-xs text-slate-400 mt-1 truncate">Register a new patient for <span className="font-bold text-slate-600">{doctor?.name}</span></p>
           </div>
         </section>
-        <main className="flex-1 p-5 lg:p-6">
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 lg:p-8 shadow-sm">
+        <main className="flex-1 p-3 sm:p-5 lg:p-6 pb-20 md:pb-6 overflow-y-auto">
+          <div className="max-w-2xl mx-auto w-full">
+            <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm">
               {success && <div className="mb-6 px-4 py-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold">{success}</div>}
               {error && <div className="mb-6 px-4 py-3 rounded-2xl bg-red-50 border border-red-200 text-red-600 text-xs font-bold">{error}</div>}
               <form onSubmit={handleSubmit} className="space-y-5">

@@ -20,37 +20,37 @@ export default function PatientList() {
   return (
     <div className="flex flex-col md:flex-row h-screen overflow-hidden bg-slate-50 text-slate-700 text-[13px] antialiased font-sans">
       <Navbar />
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
         <Header />
-        <section className="bg-white border-b border-slate-100 px-5 py-5 flex flex-col sm:flex-row justify-between gap-4 sm:items-center">
-          <div>
-            <h1 className="text-xl font-black text-slate-900 tracking-tight">Patient List</h1>
-            <p className="text-xs text-slate-400 mt-1">View appointments day by day — <span className="font-bold text-slate-600">{doctor?.name}</span></p>
+        <section className="bg-white border-b border-slate-100 px-3 sm:px-5 py-4 sm:py-5 flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 sm:items-center shrink-0">
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">Patient List</h1>
+            <p className="text-[11px] sm:text-xs text-slate-400 mt-1 truncate">View appointments — <span className="font-bold text-slate-600">{doctor?.name}</span></p>
           </div>
         </section>
-        <div className="bg-white border-b border-slate-100 px-5 py-4">
-          <div className="flex flex-wrap items-end gap-3">
-            <div>
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">From</label>
-              <input type="date" value={fromDate} onChange={e=>setFromDate(e.target.value)} className="h-9 px-3 border border-slate-200 rounded-lg text-xs font-bold focus:ring-2 focus:ring-blue-200 outline-none" />
+        <div className="bg-white border-b border-slate-100 px-3 sm:px-5 py-3 sm:py-4 shrink-0">
+          <div className="flex flex-wrap items-end gap-2 sm:gap-3">
+            <div className="flex-1 sm:flex-none min-w-[130px]">
+              <label className="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">From</label>
+              <input type="date" value={fromDate} onChange={e=>setFromDate(e.target.value)} className="w-full h-10 sm:h-9 px-3 border border-slate-200 rounded-xl sm:rounded-lg text-xs font-bold focus:ring-2 focus:ring-blue-200 outline-none" />
             </div>
-            <div>
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">To</label>
-              <input type="date" value={toDate} onChange={e=>setToDate(e.target.value)} className="h-9 px-3 border border-slate-200 rounded-lg text-xs font-bold focus:ring-2 focus:ring-blue-200 outline-none" />
+            <div className="flex-1 sm:flex-none min-w-[130px]">
+              <label className="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">To</label>
+              <input type="date" value={toDate} onChange={e=>setToDate(e.target.value)} className="w-full h-10 sm:h-9 px-3 border border-slate-200 rounded-xl sm:rounded-lg text-xs font-bold focus:ring-2 focus:ring-blue-200 outline-none" />
             </div>
-            <div>
+            <div className="hidden sm:block">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Doctor</label>
-              <div className="h-9 px-3 border border-slate-200 rounded-lg text-xs font-bold bg-slate-50 inline-flex items-center text-slate-700">{doctor?.name}</div>
+              <div className="h-9 px-3 border border-slate-200 rounded-lg text-xs font-bold bg-slate-50 inline-flex items-center text-slate-700 max-w-[160px] truncate">{doctor?.name}</div>
             </div>
-            <button onClick={fetchData} className="h-9 px-5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-black uppercase tracking-widest transition-all">Search</button>
-            <a href="#" onClick={e=>{e.preventDefault(); const d=new Date().toISOString().slice(0,10); setFromDate(d); setToDate(d);}} className="h-9 px-4 border border-orange-400 text-orange-500 hover:bg-orange-50 rounded-lg text-xs font-black uppercase inline-flex items-center transition-all">Reset</a>
-            <span className="text-[10px] font-bold text-slate-400 ml-auto">{appointments.length} result(s)</span>
+            <button onClick={fetchData} className="flex-1 sm:flex-none h-10 sm:h-9 px-5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl sm:rounded-lg text-xs font-black uppercase tracking-widest transition-all">Search</button>
+            <a href="#" onClick={e=>{e.preventDefault(); const d=new Date().toISOString().slice(0,10); setFromDate(d); setToDate(d);}} className="h-10 sm:h-9 px-4 border border-orange-400 text-orange-500 hover:bg-orange-50 rounded-xl sm:rounded-lg text-xs font-black uppercase inline-flex items-center justify-center transition-all">Reset</a>
+            <span className="w-full sm:w-auto text-[10px] font-bold text-slate-400 sm:ml-auto text-center sm:text-left mt-1 sm:mt-0">{appointments.length} result(s) • scroll →</span>
           </div>
         </div>
-        <main className="flex-1 p-5 lg:p-6">
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
+        <main className="flex-1 overflow-auto p-3 sm:p-5 lg:p-6 pb-20 md:pb-6">
+          <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl overflow-hidden shadow-sm">
+            <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0 sm:overflow-visible">
+              <table className="w-full text-left min-w-[680px]">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-black text-slate-500 uppercase tracking-wider">
                     <th className="px-4 py-3">#</th><th className="px-4 py-3">Patient Name</th><th className="px-4 py-3">Contact</th><th className="px-4 py-3">Age</th><th className="px-4 py-3">Gender</th><th className="px-4 py-3">Doctor</th><th className="px-4 py-3">Date</th><th className="px-4 py-3">Status</th>

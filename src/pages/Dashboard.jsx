@@ -11,7 +11,9 @@ export default function Dashboard() {
   const [grouped, setGrouped] = useState({});
 
   useEffect(() => {
+    let cancelled = false;
     api.get('/doctors').then(({ data }) => {
+      if(cancelled) return;
       const list = data.data || [];
       setDoctors(list);
       const g = {};
@@ -22,6 +24,7 @@ export default function Dashboard() {
       });
       setGrouped(g);
     });
+    return ()=>{ cancelled=true; };
   }, []);
 
   const sessionName = doctor?.name?.toLowerCase() || '';
@@ -29,9 +32,9 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col md:flex-row h-screen overflow-hidden bg-slate-50 text-slate-700 font-sans antialiased">
       <Navbar />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
         <Header />
-        <main className="flex-1 overflow-y-auto p-6 bg-[#f8fafc] space-y-12">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 bg-[#f8fafc] space-y-8 sm:space-y-12 pb-20 md:pb-6">
           {Object.entries(grouped).map(([spec, rooms]) => {
             const myRooms = rooms.filter(r => r.name.toLowerCase() === sessionName);
             if (myRooms.length === 0) return null;
@@ -64,11 +67,6 @@ export default function Dashboard() {
               </section>
             );
           })}
-          {!Object.values(grouped).some(arr => arr.some(r => r.name.toLowerCase() === sessionName)) && (
-            <div className="bg-white p-12 text-center rounded-xl border-2 border-dashed border-slate-200">
-              <p className="text-slate-400 font-medium">Your assigned room was not found inside database schema.</p>
-            </div>
-          )}
         </main>
       </div>
     </div>

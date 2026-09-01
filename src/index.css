@@ -4,3 +4,11 @@
 
 /* Optional: keep same antialiasing as legacy */
 body { -webkit-font-smoothing: antialiased; }
+
+/* Mobile helpers */
+html { -webkit-text-size-adjust: 100%; }
+* { -webkit-tap-highlight-color: transparent; }
+.overflow-x-auto { -webkit-overflow-scrolling: touch; }
+@media (max-width: 640px) {
+  input, select, textarea { font-size: 16px !important; } /* prevent iOS zoom */
+}

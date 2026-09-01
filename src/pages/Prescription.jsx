@@ -45,6 +45,7 @@ export default function Prescription() {
   const [modalSection, setModalSection] = useState(null);
   const [dbSuggestions, setDbSuggestions] = useState([]);
   const [manualInput, setManualInput] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   const suggestionCache = useRef({});
 
   const doctorId = id || authDoctor?._id;
@@ -137,7 +138,9 @@ export default function Prescription() {
   };
 
   const saveAndPrint = async ()=>{
+    if(isSaving) return;
     if(!patient.name || !patient.mobile || !patient.age || !patient.gender){ alert('Please fill in all patient details (Name, Mobile, Age, Gender)'); return; }
+    setIsSaving(true);
     try{
       const payload = {
         appointment_id: currentAppointmentId || 'WALK-IN',
@@ -162,6 +165,7 @@ export default function Prescription() {
       setSelectedData(Object.fromEntries(sections.map(s=>[s, []])));
       fetchQueue();
     }catch(e){ alert('Server error saving prescription'); console.error(e); }
+    finally{ setTimeout(()=> setIsSaving(false), 1200); }
   };
 
   // Layout helpers
@@ -171,41 +175,41 @@ export default function Prescription() {
   const isHidden = (id)=> layoutSections.hidden.includes(id) || (!isLeft(id) && !isRight(id) && id!=='rx');
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 text-[13px] antialiased font-sans">
+    <div className="flex flex-col md:flex-row h-screen md:h-screen overflow-hidden bg-slate-50 text-[13px] antialiased font-sans">
       <Navbar />
-      <div className="flex-1 flex flex-col min-w-0 bg-slate-50">
+      <div className="flex-1 flex flex-col min-w-0 bg-slate-50 min-h-0 overflow-hidden">
         <Header />
-        <section className="px-5 lg:px-6 py-4 bg-white border-b border-slate-100 flex justify-between gap-4 shrink-0">
-          <div>
-            <h1 className="text-xl font-black text-slate-950 tracking-tight leading-none">{doctor?.name||'Doctor'}</h1>
-            <div className="mt-2 space-y-0.5">
-              {doctor?.usr_spec && <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{doctor.usr_spec}</p>}
-              {doctor?.degree && <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{doctor.degree}</p>}
-              {doctor?.experiance && <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{doctor.experiance}</p>}
+        <section className="px-3 sm:px-5 lg:px-6 py-3 sm:py-4 bg-white border-b border-slate-100 flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 shrink-0">
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-black text-slate-950 tracking-tight leading-none truncate">{doctor?.name||'Doctor'}</h1>
+            <div className="mt-1.5 sm:mt-2 space-y-0.5">
+              {doctor?.usr_spec && <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">{doctor.usr_spec}</p>}
+              {doctor?.degree && <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight line-clamp-2">{doctor.degree}</p>}
+              {doctor?.experiance && <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">{doctor.experiance}</p>}
             </div>
           </div>
-          <div className="text-right">
-            {doctor?.name_ban && <div className="text-base font-bold text-slate-900">{doctor.name_ban}</div>}
-            {doctor?.usr_spec_ban && <div className="text-[11px] font-semibold text-slate-600">{doctor.usr_spec_ban}</div>}
-            {doctor?.degree_ban && <div className="text-[10px] text-slate-500">{doctor.degree_ban}</div>}
+          <div className="text-left sm:text-right shrink-0">
+            {doctor?.name_ban && <div className="text-sm sm:text-base font-bold text-slate-900">{doctor.name_ban}</div>}
+            {doctor?.usr_spec_ban && <div className="text-[10px] sm:text-[11px] font-semibold text-slate-600">{doctor.usr_spec_ban}</div>}
+            {doctor?.degree_ban && <div className="text-[10px] text-slate-500 line-clamp-2 max-w-[200px] sm:max-w-none">{doctor.degree_ban}</div>}
             {doctor?.experiance_ban && <div className="text-[10px] text-slate-500">{doctor.experiance_ban}</div>}
           </div>
         </section>
 
-        <div className="flex items-center gap-1 bg-gray-100 border border-gray-300 h-8 px-1 text-sm shrink-0 overflow-x-auto whitespace-nowrap">
-          <button onClick={()=>setShowQueue(true)} className="px-4 h-6 rounded border border-indigo-300 bg-indigo-50 text-indigo-700 font-bold hover:bg-indigo-100 text-xs flex items-center gap-2"><span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>Patient Queue</button>
-          <input value={patient.name} onChange={e=>setPatient({...patient, name:e.target.value})} placeholder="Name" className="h-6 w-56 rounded border border-gray-300 px-2 text-gray-500" />
-          <input value={patient.mobile} onChange={e=>setPatient({...patient, mobile:e.target.value})} placeholder="Mobile" className="h-6 w-32 rounded border border-gray-300 px-2 text-gray-500" />
-          <input value={patient.age} onChange={e=>setPatient({...patient, age:e.target.value})} placeholder="Age" className="h-6 w-32 rounded border border-gray-300 px-2 text-gray-500" />
-          <select value={patient.gender} onChange={e=>setPatient({...patient, gender:e.target.value})} className="h-6 w-24 rounded border border-gray-300 px-2 text-gray-500 bg-white">
-            <option value="">Gender</option><option value="Male">Male</option><option value="Female">Female</option>
+        <div className="flex flex-wrap lg:flex-nowrap items-center gap-1.5 bg-gray-100 border-y sm:border border-gray-300 px-2 py-2 text-sm shrink-0 lg:overflow-x-auto">
+          <button onClick={()=>setShowQueue(true)} className="w-full sm:w-auto px-3 sm:px-4 h-8 sm:h-6 rounded-lg sm:rounded border border-indigo-300 bg-indigo-50 text-indigo-700 font-bold hover:bg-indigo-100 text-xs flex items-center justify-center gap-2 shrink-0"><span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>Patient Queue</button>
+          <input value={patient.name} onChange={e=>setPatient({...patient, name:e.target.value})} placeholder="Name *" className="h-9 sm:h-6 flex-1 sm:flex-none sm:w-40 lg:w-44 rounded-lg sm:rounded border border-gray-300 px-2.5 sm:px-2 text-xs sm:text-gray-500 bg-white min-w-[120px]" />
+          <input value={patient.mobile} onChange={e=>setPatient({...patient, mobile:e.target.value})} placeholder="Mobile *" className="h-9 sm:h-6 w-[48%] sm:w-28 lg:w-32 rounded-lg sm:rounded border border-gray-300 px-2.5 sm:px-2 text-xs sm:text-gray-500 bg-white" />
+          <input value={patient.age} onChange={e=>setPatient({...patient, age:e.target.value})} placeholder="Age *" className="h-9 sm:h-6 w-[48%] sm:w-20 lg:w-24 rounded-lg sm:rounded border border-gray-300 px-2.5 sm:px-2 text-xs sm:text-gray-500 bg-white" />
+          <select value={patient.gender} onChange={e=>setPatient({...patient, gender:e.target.value})} className="h-9 sm:h-6 w-[48%] sm:w-24 rounded-lg sm:rounded border border-gray-300 px-2.5 sm:px-2 text-xs sm:text-gray-500 bg-white">
+            <option value="">Gender *</option><option value="Male">Male</option><option value="Female">Female</option>
           </select>
-          <input value={patient.address} onChange={e=>setPatient({...patient, address:e.target.value})} placeholder="Address" className="h-6 min-w-64 flex-1 rounded border border-gray-300 px-2 text-gray-500" />
-          <input type="datetime-local" value={patient.datetime} onChange={e=>setPatient({...patient, datetime:e.target.value})} className="h-6 w-44 rounded border border-gray-300 px-2 text-gray-500" />
+          <input value={patient.address} onChange={e=>setPatient({...patient, address:e.target.value})} placeholder="Address" className="h-9 sm:h-6 w-full lg:flex-1 lg:min-w-[140px] rounded-lg sm:rounded border border-gray-300 px-2.5 sm:px-2 text-xs sm:text-gray-500 bg-white" />
+          <input type="datetime-local" value={patient.datetime} onChange={e=>setPatient({...patient, datetime:e.target.value})} className="h-9 sm:h-6 w-full sm:w-auto lg:w-44 rounded-lg sm:rounded border border-gray-300 px-2.5 sm:px-2 text-xs sm:text-gray-500 bg-white" />
         </div>
 
-        <main className="flex-1 overflow-hidden flex flex-col lg:flex-row p-4 gap-4">
-          <aside className="w-full lg:w-[28%] xl:w-1/4 bg-white border border-slate-100 rounded-3xl p-4 space-y-3 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row p-3 sm:p-4 gap-3 sm:gap-4 pb-24 md:pb-4">
+          <aside className="w-full lg:w-[28%] xl:w-1/4 bg-white border border-slate-100 rounded-2xl sm:rounded-3xl p-3 sm:p-4 space-y-3 lg:overflow-y-auto shrink-0">
             <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.22em] mb-3">Sections</h3>
             {sections.filter(s=> s!=='rx' && (isLeft(s) || !isRight(s) && !isHidden(s))).map(id=> (
               <div key={id} className="group bg-white border border-slate-100 rounded-2xl p-3 hover:border-slate-200 hover:shadow-sm transition-all">
@@ -220,39 +224,41 @@ export default function Prescription() {
             ))}
           </aside>
 
-          <section className="flex-1 bg-white border border-slate-100 rounded-3xl p-5 lg:p-6 overflow-y-auto">
-            <div className="bg-emerald-50/40 border border-emerald-100 rounded-2xl p-4 mb-4">
-              <div className="flex items-center justify-between gap-3 mb-2"><span className="text-[12px] font-black text-emerald-800 uppercase tracking-wide">Rx (Medication)</span></div>
-              <table className="w-full text-left mb-6 mt-7 relative z-10">
+          <section className="flex-1 bg-white border border-slate-100 rounded-2xl sm:rounded-3xl p-3 sm:p-5 lg:p-6 lg:overflow-y-auto min-h-0">
+            <div className="bg-emerald-50/40 border border-emerald-100 rounded-2xl p-3 sm:p-4 mb-4">
+              <div className="flex items-center justify-between gap-3 mb-2"><span className="text-[11px] sm:text-[12px] font-black text-emerald-800 uppercase tracking-wide">Rx (Medication)</span></div>
+              <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
+              <table className="w-full text-left mb-4 sm:mb-6 mt-4 sm:mt-7 relative z-10 min-w-[320px]">
                 <thead className="border-b-2 border-slate-300 text-[11px] text-slate-500">
-                  <tr><th className="py-2 w-3/7 text-[14px]">Medications</th><th className="py-2 text-center w-2/7 text-[14px]">Dosage</th><th className="py-2 text-right w-2/7 text-[14px]">Duration</th></tr>
+                  <tr><th className="py-2 text-[12px] sm:text-[14px]">Medications</th><th className="py-2 text-center text-[12px] sm:text-[14px]">Dosage</th><th className="py-2 text-right text-[12px] sm:text-[14px]">Duration</th><th className="py-2 w-6"></th></tr>
                 </thead>
-                <tbody className="text-[13px] divide-y divide-slate-100">
+                <tbody className="text-[12px] sm:text-[13px] divide-y divide-slate-100">
                   {meds.map((m,idx)=>(
                     <tr key={idx} className="border-b hover:bg-slate-50">
-                      <td className="py-2"><b>{m.name}</b><br/><small className="text-slate-500">{m.instruction}</small></td>
-                      <td className="text-center font-medium">{m.dose}</td>
-                      <td className="text-right font-medium">{m.duration}</td>
-                      <td><button onClick={()=>setMeds(meds.filter((_,i)=>i!==idx))} className="text-red-400 ml-2">×</button></td>
+                      <td className="py-2 pr-2"><b className="break-words">{m.name}</b><br/><small className="text-slate-500 break-words">{m.instruction}</small></td>
+                      <td className="text-center font-medium whitespace-nowrap">{m.dose}</td>
+                      <td className="text-right font-medium whitespace-nowrap">{m.duration}</td>
+                      <td><button onClick={()=>setMeds(meds.filter((_,i)=>i!==idx))} className="text-red-400 ml-1 sm:ml-2 p-1">×</button></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <div className="grid grid-cols-12 gap-1 bg-slate-50 p-2 rounded-lg border border-slate-300">
-                <div className="col-span-5 relative">
-                  <input value={mName} onChange={e=>setMName(e.target.value)} placeholder="Medicine" className="w-full p-2.5 text-xs border rounded outline-none focus:ring-1 focus:ring-blue-400" />
-                  {medicineResults.length>0 && <div className="absolute left-0 right-0 mt-1 bg-white border border-slate-300 rounded shadow-md overflow-hidden z-50 max-h-64 overflow-y-auto">{medicineResults.map(it=> <button key={it._id} onClick={()=>{setMName(it.medicine); setMedicineResults([]);}} className="block w-full text-left px-3 py-2 text-xs hover:bg-slate-50">{it.medicine}</button>)}</div>}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-1 bg-slate-50 p-2 sm:p-2 rounded-xl sm:rounded-lg border border-slate-300">
+                <div className="sm:col-span-5 relative">
+                  <input value={mName} onChange={e=>setMName(e.target.value)} onFocus={()=>{ if(mName.trim() && medicineResults.length===0) doSearch(mName,'medicine', setMedicineResults); }} onBlur={()=> setTimeout(()=> setMedicineResults([]), 180)} placeholder="Medicine *" className="w-full p-3 sm:p-2.5 text-xs border rounded-xl sm:rounded outline-none focus:ring-2 focus:ring-blue-400 bg-white" autoComplete="off" />
+                  {medicineResults.length>0 && <div className="absolute left-0 right-0 mt-1 bg-white border border-slate-300 rounded-xl shadow-md overflow-hidden z-50 max-h-64 overflow-y-auto">{medicineResults.map(it=> <button key={it._id} type="button" onMouseDown={e=>{ e.preventDefault(); setMName(it.medicine); setMedicineResults([]); }} className="block w-full text-left px-3 py-2.5 sm:py-2 text-xs hover:bg-blue-50 active:bg-blue-100">{it.medicine}</button>)}</div>}
                 </div>
-                <div className="col-span-3 relative">
-                  <input value={mInst} onChange={e=>setMInst(e.target.value)} placeholder="Advice" className="w-full p-2.5 text-xs border rounded outline-none focus:ring-1 focus:ring-blue-400" />
-                  {adviceResults.length>0 && <div className="absolute left-0 right-0 mt-1 bg-white border rounded shadow-md z-50 max-h-64 overflow-y-auto">{adviceResults.map(it=> <button key={it._id} onClick={()=>{setMInst(it.medadvice); setAdviceResults([]);}} className="block w-full text-left px-3 py-2 text-xs hover:bg-slate-50">{it.medadvice}</button>)}</div>}
+                <div className="sm:col-span-3 relative">
+                  <input value={mInst} onChange={e=>setMInst(e.target.value)} onFocus={()=>{ if(mInst.trim() && adviceResults.length===0) doSearch(mInst,'medadvice', setAdviceResults); }} onBlur={()=> setTimeout(()=> setAdviceResults([]), 180)} placeholder="Advice" className="w-full p-3 sm:p-2.5 text-xs border rounded-xl sm:rounded outline-none focus:ring-2 focus:ring-blue-400 bg-white" autoComplete="off" />
+                  {adviceResults.length>0 && <div className="absolute left-0 right-0 mt-1 bg-white border rounded-xl shadow-md z-50 max-h-64 overflow-y-auto">{adviceResults.map(it=> <button key={it._id} type="button" onMouseDown={e=>{ e.preventDefault(); setMInst(it.medadvice); setAdviceResults([]); }} className="block w-full text-left px-3 py-2.5 sm:py-2 text-xs hover:bg-blue-50 active:bg-blue-100">{it.medadvice}</button>)}</div>}
                 </div>
-                <div className="col-span-2 relative">
-                  <input value={mDose} onChange={e=>setMDose(e.target.value)} placeholder="1+0+1" className="w-full p-2.5 text-xs border rounded text-center outline-none focus:ring-1 focus:ring-blue-400" />
-                  {doseResults.length>0 && <div className="absolute left-0 right-0 mt-1 bg-white border rounded shadow-md z-50 max-h-64 overflow-y-auto">{doseResults.map(it=> <button key={it._id} onClick={()=>{setMDose(it.dose); setDoseResults([]);}} className="block w-full text-left px-3 py-2 text-xs hover:bg-slate-50">{it.dose}</button>)}</div>}
+                <div className="sm:col-span-2 relative">
+                  <input value={mDose} onChange={e=>setMDose(e.target.value)} onFocus={()=>{ if(mDose.trim() && doseResults.length===0) doSearch(mDose,'dose', setDoseResults); }} onBlur={()=> setTimeout(()=> setDoseResults([]), 180)} placeholder="1+0+1" className="w-full p-3 sm:p-2.5 text-xs border rounded-xl sm:rounded text-center outline-none focus:ring-2 focus:ring-blue-400 bg-white" autoComplete="off" />
+                  {doseResults.length>0 && <div className="absolute left-0 right-0 mt-1 bg-white border rounded-xl shadow-md z-50 max-h-64 overflow-y-auto">{doseResults.map(it=> <button key={it._id} type="button" onMouseDown={e=>{ e.preventDefault(); setMDose(it.dose); setDoseResults([]); }} className="block w-full text-left px-3 py-2.5 sm:py-2 text-xs hover:bg-blue-50 active:bg-blue-100">{it.dose}</button>)}</div>}
                 </div>
-                <input value={mDur} onChange={e=>setMDur(e.target.value)} placeholder="Days" className="col-span-1 p-1.5 text-xs border rounded text-center" />
-                <button onClick={addMed} className="col-span-1 text-slate-900 rounded font-medium text-[24px]">+</button>
+                <input value={mDur} onChange={e=>setMDur(e.target.value)} placeholder="Days" className="sm:col-span-1 p-3 sm:p-1.5 text-xs border rounded-xl sm:rounded text-center bg-white" />
+                <button onClick={addMed} className="sm:col-span-1 h-11 sm:h-auto bg-slate-900 sm:bg-transparent text-white sm:text-slate-900 rounded-xl sm:rounded font-bold text-lg sm:text-[24px] hover:bg-slate-800 sm:hover:bg-slate-100">+</button>
               </div>
             </div>
 
@@ -338,10 +344,10 @@ export default function Prescription() {
         </div>
       )}
 
-      <div className="fixed bottom-4 right-4 z-50">
-        <button onClick={saveAndPrint} className="bg-blue-700 hover:bg-blue-800 text-white flex items-center gap-2 rounded-lg shadow-lg">
-          <span className="px-4 py-2.5 text-xs font-bold tracking-wide uppercase">SAVE & PRINT</span>
-          <span className="bg-blue-800/50 px-3 py-2.5 rounded-r-lg"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg></span>
+      <div className="fixed bottom-[72px] md:bottom-4 right-3 left-3 md:left-auto md:right-4 z-40 flex justify-center md:justify-end pointer-events-none">
+        <button onClick={saveAndPrint} disabled={isSaving} className={`pointer-events-auto w-full md:w-auto text-white flex items-center justify-center gap-2 rounded-xl shadow-xl max-w-sm md:max-w-none ${isSaving ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-700 hover:bg-blue-800'}`}>
+          <span className="px-4 py-3 md:py-2.5 text-xs font-bold tracking-wide uppercase flex-1 md:flex-none text-center">{isSaving ? 'SAVING...' : 'SAVE & PRINT'}</span>
+          <span className="bg-blue-800/50 px-3 py-3 md:py-2.5 rounded-r-xl shrink-0"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg></span>
         </button>
       </div>
     </div>
