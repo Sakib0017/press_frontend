@@ -63,16 +63,46 @@ export default function Navbar() {
             const cls = isActive ? 'text-blue-700 border-t-2 md:border-t-0 md:border-l-4 border-blue-700 bg-blue-50/50 md:bg-blue-50' : 'text-slate-400 border-t-2 border-transparent md:border-t-0 md:border-l-4 md:border-transparent hover:text-slate-600 hover:bg-slate-50';
             const Icon = item.Icon;
             return (
-              <NavLink key={item.url} to={item.url} className={`flex flex-col items-center justify-center py-1.5 md:py-3.5 transition-all relative group rounded-md md:rounded-none ${cls}`}>
-                <Icon className={`w-[22px] h-[22px] md:w-6 md:h-6 shrink-0 ${isActive ? 'text-blue-700' : 'text-slate-400 group-hover:text-slate-600'}`} />
-                <span className="md:hidden text-[8px] font-bold mt-0.5 tracking-tight leading-none">{item.name}</span>
-                <span className="hidden md:block text-[10px] font-black uppercase tracking-wider mt-1 leading-none">{item.name}</span>
-              </NavLink>
+             <NavLink
+  key={item.url}
+  to={item.url}
+  className={`group relative flex flex-col items-center justify-center py-1.5 md:py-3.5 transition-all rounded-md md:rounded-none ${cls}`}
+>
+  <Icon
+    className={`w-[22px] h-[22px] md:w-6 md:h-6 shrink-0 transition-colors ${
+      isActive
+        ? 'text-blue-700'
+        : 'text-slate-400 group-hover:text-slate-600'
+    }`}
+  />
+
+ 
+
+  {/* Hover Menu Plate */}
+  <span
+    className="
+      hidden md:block
+      absolute left-full top-1/2 -translate-y-1/2 ml-2
+      whitespace-nowrap
+      rounded-md bg-slate-900 px-3 py-2
+      text-[11px] font-bold uppercase tracking-wider text-white
+      shadow-lg
+      opacity-0 -translate-x-3
+      pointer-events-none
+      transition-all duration-200 ease-out
+      group-hover:opacity-100
+      group-hover:translate-x-0
+    "
+  >
+    {item.name}
+  </span>
+</NavLink>
+
             );
           })}
         </nav>
       </aside>
-      <div className="h-[65px] md:hidden"></div>
+     
     </>
   );
 }

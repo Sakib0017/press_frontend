@@ -225,7 +225,7 @@ export default function Prescription() {
             ))}
           </aside>
 
-          <section className="flex-1 bg-white border border-slate-100 rounded-2xl sm:rounded-3xl p-3 sm:p-5 lg:p-6 lg:overflow-y-auto min-h-0">
+          <section className="flex-1 bg-white border border-slate-100 mb-40 rounded-2xl sm:rounded-3xl p-3 sm:p-5 lg:p-6 lg:overflow-y-auto min-h-0">
             <div className="bg-blue-50/40 border border-blue-100 rounded-2xl p-3 sm:p-4 mb-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
