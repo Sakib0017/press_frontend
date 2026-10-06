@@ -43,6 +43,7 @@ export default function Prescription() {
   const [mName, setMName] = useState(''); const [mInst, setMInst] = useState(''); const [mDose, setMDose] = useState(''); const [mDur, setMDur] = useState('');
   const [medicineResults, setMedicineResults] = useState([]); const [adviceResults, setAdviceResults] = useState([]); const [doseResults, setDoseResults] = useState([]);
   const [modalSection, setModalSection] = useState(null);
+  const [showRxModal, setShowRxModal] = useState(false);
   const [dbSuggestions, setDbSuggestions] = useState([]);
   const [manualInput, setManualInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -197,7 +198,7 @@ export default function Prescription() {
         </section>
 
         <div className="flex flex-wrap lg:flex-nowrap items-center gap-1.5 bg-gray-100 border-y sm:border border-gray-300 px-2 py-2 text-sm shrink-0 lg:overflow-x-auto">
-          <button onClick={()=>setShowQueue(true)} className="w-full sm:w-auto px-3 sm:px-4 h-8 sm:h-6 rounded-lg sm:rounded border border-indigo-300 bg-indigo-50 text-indigo-700 font-bold hover:bg-indigo-100 text-xs flex items-center justify-center gap-2 shrink-0"><span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>Patient Queue</button>
+          <button onClick={()=>setShowQueue(true)} className="w-full sm:w-auto px-3 sm:px-4 h-8 sm:h-6 rounded-lg sm:rounded border border-blue-300 bg-blue-50 text-blue-700 font-bold hover:bg-blue-100 text-xs flex items-center justify-center gap-2 shrink-0"><span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>Patient Queue</button>
           <input value={patient.name} onChange={e=>setPatient({...patient, name:e.target.value})} placeholder="Name *" className="h-9 sm:h-6 flex-1 sm:flex-none sm:w-40 lg:w-44 rounded-lg sm:rounded border border-gray-300 px-2.5 sm:px-2 text-xs sm:text-gray-500 bg-white min-w-[120px]" />
           <input value={patient.mobile} onChange={e=>setPatient({...patient, mobile:e.target.value})} placeholder="Mobile *" className="h-9 sm:h-6 w-[48%] sm:w-28 lg:w-32 rounded-lg sm:rounded border border-gray-300 px-2.5 sm:px-2 text-xs sm:text-gray-500 bg-white" />
           <input value={patient.age} onChange={e=>setPatient({...patient, age:e.target.value})} placeholder="Age *" className="h-9 sm:h-6 w-[48%] sm:w-20 lg:w-24 rounded-lg sm:rounded border border-gray-300 px-2.5 sm:px-2 text-xs sm:text-gray-500 bg-white" />
@@ -225,41 +226,35 @@ export default function Prescription() {
           </aside>
 
           <section className="flex-1 bg-white border border-slate-100 rounded-2xl sm:rounded-3xl p-3 sm:p-5 lg:p-6 lg:overflow-y-auto min-h-0">
-            <div className="bg-emerald-50/40 border border-emerald-100 rounded-2xl p-3 sm:p-4 mb-4">
-              <div className="flex items-center justify-between gap-3 mb-2"><span className="text-[11px] sm:text-[12px] font-black text-emerald-800 uppercase tracking-wide">Rx (Medication)</span></div>
-              <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
-              <table className="w-full text-left mb-4 sm:mb-6 mt-4 sm:mt-7 relative z-10 min-w-[320px]">
-                <thead className="border-b-2 border-slate-300 text-[11px] text-slate-500">
-                  <tr><th className="py-2 text-[12px] sm:text-[14px]">Medications</th><th className="py-2 text-center text-[12px] sm:text-[14px]">Dosage</th><th className="py-2 text-right text-[12px] sm:text-[14px]">Duration</th><th className="py-2 w-6"></th></tr>
-                </thead>
-                <tbody className="text-[12px] sm:text-[13px] divide-y divide-slate-100">
-                  {meds.map((m,idx)=>(
-                    <tr key={idx} className="border-b hover:bg-slate-50">
-                      <td className="py-2 pr-2"><b className="break-words">{m.name}</b><br/><small className="text-slate-500 break-words">{m.instruction}</small></td>
-                      <td className="text-center font-medium whitespace-nowrap">{m.dose}</td>
-                      <td className="text-right font-medium whitespace-nowrap">{m.duration}</td>
-                      <td><button onClick={()=>setMeds(meds.filter((_,i)=>i!==idx))} className="text-red-400 ml-1 sm:ml-2 p-1">×</button></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="bg-blue-50/40 border border-blue-100 rounded-2xl p-3 sm:p-4 mb-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] sm:text-[12px] font-black text-blue-800 uppercase tracking-wide">Rx (Medication)</span>
+                  {meds.length > 0 && <span className="px-2 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-black">{meds.length}</span>}
+                </div>
+                <button onClick={()=>setShowRxModal(true)} className="h-7 px-3 rounded-full bg-blue-600 text-white text-[11px] font-black flex items-center justify-center gap-1 hover:bg-blue-700 shrink-0">+ Manage Rx</button>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-1 bg-slate-50 p-2 sm:p-2 rounded-xl sm:rounded-lg border border-slate-300">
-                <div className="sm:col-span-5 relative">
-                  <input value={mName} onChange={e=>setMName(e.target.value)} onFocus={()=>{ if(mName.trim() && medicineResults.length===0) doSearch(mName,'medicine', setMedicineResults); }} onBlur={()=> setTimeout(()=> setMedicineResults([]), 180)} placeholder="Medicine *" className="w-full p-3 sm:p-2.5 text-xs border rounded-xl sm:rounded outline-none focus:ring-2 focus:ring-blue-400 bg-white" autoComplete="off" />
-                  {medicineResults.length>0 && <div className="absolute left-0 right-0 mt-1 bg-white border border-slate-300 rounded-xl shadow-md overflow-hidden z-50 max-h-64 overflow-y-auto">{medicineResults.map(it=> <button key={it._id} type="button" onMouseDown={e=>{ e.preventDefault(); setMName(it.medicine); setMedicineResults([]); }} className="block w-full text-left px-3 py-2.5 sm:py-2 text-xs hover:bg-blue-50 active:bg-blue-100">{it.medicine}</button>)}</div>}
+              {meds.length === 0 ? (
+                <p className="mt-3 text-[12px] text-slate-400 font-medium">No medications added yet. Click <button onClick={()=>setShowRxModal(true)} className="text-blue-700 font-bold underline">Manage Rx</button> to add.</p>
+              ) : (
+                <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
+                <table className="w-full text-left mt-3 min-w-[320px]">
+                  <thead className="border-b-2 border-slate-300 text-[11px] text-slate-500">
+                    <tr><th className="py-2 text-[12px] sm:text-[14px]">Medications</th><th className="py-2 text-center text-[12px] sm:text-[14px]">Dosage</th><th className="py-2 text-right text-[12px] sm:text-[14px]">Duration</th><th className="py-2 w-6"></th></tr>
+                  </thead>
+                  <tbody className="text-[12px] sm:text-[13px] divide-y divide-slate-100">
+                    {meds.map((m,idx)=>(
+                      <tr key={idx} className="border-b hover:bg-slate-50">
+                        <td className="py-2 pr-2"><b className="break-words">{m.name}</b><br/><small className="text-slate-500 break-words">{m.instruction}</small></td>
+                        <td className="text-center font-medium whitespace-nowrap">{m.dose}</td>
+                        <td className="text-right font-medium whitespace-nowrap">{m.duration}</td>
+                        <td><button onClick={()=>setMeds(meds.filter((_,i)=>i!==idx))} className="text-red-400 ml-1 sm:ml-2 p-1">×</button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
                 </div>
-                <div className="sm:col-span-3 relative">
-                  <input value={mInst} onChange={e=>setMInst(e.target.value)} onFocus={()=>{ if(mInst.trim() && adviceResults.length===0) doSearch(mInst,'medadvice', setAdviceResults); }} onBlur={()=> setTimeout(()=> setAdviceResults([]), 180)} placeholder="Advice" className="w-full p-3 sm:p-2.5 text-xs border rounded-xl sm:rounded outline-none focus:ring-2 focus:ring-blue-400 bg-white" autoComplete="off" />
-                  {adviceResults.length>0 && <div className="absolute left-0 right-0 mt-1 bg-white border rounded-xl shadow-md z-50 max-h-64 overflow-y-auto">{adviceResults.map(it=> <button key={it._id} type="button" onMouseDown={e=>{ e.preventDefault(); setMInst(it.medadvice); setAdviceResults([]); }} className="block w-full text-left px-3 py-2.5 sm:py-2 text-xs hover:bg-blue-50 active:bg-blue-100">{it.medadvice}</button>)}</div>}
-                </div>
-                <div className="sm:col-span-2 relative">
-                  <input value={mDose} onChange={e=>setMDose(e.target.value)} onFocus={()=>{ if(mDose.trim() && doseResults.length===0) doSearch(mDose,'dose', setDoseResults); }} onBlur={()=> setTimeout(()=> setDoseResults([]), 180)} placeholder="1+0+1" className="w-full p-3 sm:p-2.5 text-xs border rounded-xl sm:rounded text-center outline-none focus:ring-2 focus:ring-blue-400 bg-white" autoComplete="off" />
-                  {doseResults.length>0 && <div className="absolute left-0 right-0 mt-1 bg-white border rounded-xl shadow-md z-50 max-h-64 overflow-y-auto">{doseResults.map(it=> <button key={it._id} type="button" onMouseDown={e=>{ e.preventDefault(); setMDose(it.dose); setDoseResults([]); }} className="block w-full text-left px-3 py-2.5 sm:py-2 text-xs hover:bg-blue-50 active:bg-blue-100">{it.dose}</button>)}</div>}
-                </div>
-                <input value={mDur} onChange={e=>setMDur(e.target.value)} placeholder="Days" className="sm:col-span-1 p-3 sm:p-1.5 text-xs border rounded-xl sm:rounded text-center bg-white" />
-                <button onClick={addMed} className="sm:col-span-1 h-11 sm:h-auto bg-slate-900 sm:bg-transparent text-white sm:text-slate-900 rounded-xl sm:rounded font-bold text-lg sm:text-[24px] hover:bg-slate-800 sm:hover:bg-slate-100">+</button>
-              </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -285,15 +280,15 @@ export default function Prescription() {
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden border border-slate-200">
             <div className="px-6 py-4 border-b flex justify-between items-center"><div><h3 className="text-lg font-black">Patient Management Queue</h3><p className="text-[10px] font-bold text-slate-400 uppercase">Doctor: {doctor?.name}</p></div><button onClick={()=>setShowQueue(false)} className="text-slate-300 hover:text-slate-600 text-3xl font-light">&times;</button></div>
             <div className="flex border-b bg-slate-50/50">
-              <button onClick={()=>setActiveTab('waiting')} className={`flex-1 py-3 px-4 text-center border-b-2 font-black text-[11px] uppercase ${activeTab==='waiting'?'border-indigo-600 text-indigo-600 bg-white':'border-transparent text-slate-400'}`}>Queue ({waiting.length})</button>
-              <button onClick={()=>setActiveTab('completed')} className={`flex-1 py-3 px-4 text-center border-b-2 font-black text-[11px] uppercase ${activeTab==='completed'?'border-emerald-600 text-emerald-600 bg-white':'border-transparent text-slate-400'}`}>Completed ({completed.length})</button>
+              <button onClick={()=>setActiveTab('waiting')} className={`flex-1 py-3 px-4 text-center border-b-2 font-black text-[11px] uppercase ${activeTab==='waiting'?'border-blue-600 text-blue-600 bg-white':'border-transparent text-slate-400'}`}>Queue ({waiting.length})</button>
+              <button onClick={()=>setActiveTab('completed')} className={`flex-1 py-3 px-4 text-center border-b-2 font-black text-[11px] uppercase ${activeTab==='completed'?'border-blue-600 text-blue-600 bg-white':'border-transparent text-slate-400'}`}>Completed ({completed.length})</button>
             </div>
             <div className="p-6 max-h-[500px] overflow-y-auto">
               {activeTab==='waiting' ? (
                 waiting.length===0 ? <p className="text-center py-20 text-slate-400 font-bold">No patients in queue.</p> :
                 <div className="divide-y divide-slate-100">{waiting.map(p=> (
                   <div key={p._id} onClick={()=>startPatient(p)} className="py-3 flex justify-between items-center hover:bg-slate-50 p-2 rounded cursor-pointer">
-                    <div><h4 className="text-sm font-bold text-slate-800">{p.patient_name}</h4><p className="text-xs text-slate-500">{p.patient_age} Yrs | {p.patient_gender} | {p.patient_contact}</p></div><span className="text-xs bg-indigo-50 text-indigo-600 font-bold px-2.5 py-1 rounded-full">ID: #{String(p._id).slice(-6)}</span>
+                    <div><h4 className="text-sm font-bold text-slate-800">{p.patient_name}</h4><p className="text-xs text-slate-500">{p.patient_age} Yrs | {p.patient_gender} | {p.patient_contact}</p></div><span className="text-xs bg-blue-50 text-blue-600 font-bold px-2.5 py-1 rounded-full">ID: #{String(p._id).slice(-6)}</span>
                   </div>
                 ))}</div>
               ) : (
@@ -314,6 +309,58 @@ export default function Prescription() {
               )}
             </div>
             <div className="px-6 py-4 border-t bg-slate-50/30 flex justify-between items-center"><span className="text-[10px] font-bold text-slate-400 uppercase">Powered by Popular Diagnostic Centre</span><button onClick={()=>setShowQueue(false)} className="px-6 py-2 bg-white border border-slate-200 rounded text-[11px] font-black uppercase">Close Queue</button></div>
+          </div>
+        </div>
+      )}
+
+      {/* Rx (Medication) Modal */}
+      {showRxModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/40 backdrop-blur-sm p-3 sm:p-4">
+          <div className="bg-white w-full max-w-2xl rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-100 max-h-[90vh] flex flex-col">
+            <div className="p-4 sm:p-5 flex justify-between items-center bg-blue-50/60 border-b border-blue-100 shrink-0">
+              <div><h3 className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Rx (Medication){meds.length > 0 ? ` • ${meds.length}` : ''}</h3><h2 className="text-base font-black">Manage Medications</h2></div>
+              <button onClick={()=>setShowRxModal(false)} className="h-9 w-9 rounded-full bg-white border text-slate-400 hover:text-slate-900 text-xl flex items-center justify-center">&times;</button>
+            </div>
+            <div className="p-4 sm:p-5 overflow-y-auto">
+              <div className="overflow-x-auto -mx-1 px-1">
+              <table className="w-full text-left mb-4 min-w-[340px]">
+                <thead className="border-b-2 border-slate-300 text-[11px] text-slate-500">
+                  <tr><th className="py-2 text-[12px] sm:text-[14px]">Medications</th><th className="py-2 text-center text-[12px] sm:text-[14px]">Dosage</th><th className="py-2 text-right text-[12px] sm:text-[14px]">Duration</th><th className="py-2 w-6"></th></tr>
+                </thead>
+                <tbody className="text-[12px] sm:text-[13px] divide-y divide-slate-100">
+                  {meds.length === 0 && <tr><td colSpan={4} className="py-6 text-center text-slate-400 font-medium">No medications added yet.</td></tr>}
+                  {meds.map((m,idx)=>(
+                    <tr key={idx} className="border-b hover:bg-slate-50">
+                      <td className="py-2 pr-2"><b className="break-words">{m.name}</b><br/><small className="text-slate-500 break-words">{m.instruction}</small></td>
+                      <td className="text-center font-medium whitespace-nowrap">{m.dose}</td>
+                      <td className="text-right font-medium whitespace-nowrap">{m.duration}</td>
+                      <td><button onClick={()=>setMeds(meds.filter((_,i)=>i!==idx))} className="text-red-400 ml-1 sm:ml-2 p-1">×</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-1 bg-slate-50 p-2 rounded-xl border border-slate-300">
+                <div className="sm:col-span-5 relative">
+                  <input value={mName} onChange={e=>setMName(e.target.value)} onFocus={()=>{ if(mName.trim() && medicineResults.length===0) doSearch(mName,'medicine', setMedicineResults); }} onBlur={()=> setTimeout(()=> setMedicineResults([]), 180)} onKeyDown={e=>{ if(e.key==='Enter') addMed(); }} placeholder="Medicine *" className="w-full p-3 sm:p-2.5 text-xs border rounded-xl outline-none focus:ring-2 focus:ring-blue-400 bg-white" autoComplete="off" />
+                  {medicineResults.length>0 && <div className="absolute left-0 right-0 mt-1 bg-white border border-slate-300 rounded-xl shadow-md overflow-hidden z-50 max-h-64 overflow-y-auto">{medicineResults.map(it=> <button key={it._id} type="button" onMouseDown={e=>{ e.preventDefault(); setMName(it.medicine); setMedicineResults([]); }} className="block w-full text-left px-3 py-2.5 sm:py-2 text-xs hover:bg-blue-50 active:bg-blue-100">{it.medicine}</button>)}</div>}
+                </div>
+                <div className="sm:col-span-3 relative">
+                  <input value={mInst} onChange={e=>setMInst(e.target.value)} onFocus={()=>{ if(mInst.trim() && adviceResults.length===0) doSearch(mInst,'medadvice', setAdviceResults); }} onBlur={()=> setTimeout(()=> setAdviceResults([]), 180)} onKeyDown={e=>{ if(e.key==='Enter') addMed(); }} placeholder="Advice" className="w-full p-3 sm:p-2.5 text-xs border rounded-xl outline-none focus:ring-2 focus:ring-blue-400 bg-white" autoComplete="off" />
+                  {adviceResults.length>0 && <div className="absolute left-0 right-0 mt-1 bg-white border rounded-xl shadow-md z-50 max-h-64 overflow-y-auto">{adviceResults.map(it=> <button key={it._id} type="button" onMouseDown={e=>{ e.preventDefault(); setMInst(it.medadvice); setAdviceResults([]); }} className="block w-full text-left px-3 py-2.5 sm:py-2 text-xs hover:bg-blue-50 active:bg-blue-100">{it.medadvice}</button>)}</div>}
+                </div>
+                <div className="sm:col-span-2 relative">
+                  <input value={mDose} onChange={e=>setMDose(e.target.value)} onFocus={()=>{ if(mDose.trim() && doseResults.length===0) doSearch(mDose,'dose', setDoseResults); }} onBlur={()=> setTimeout(()=> setDoseResults([]), 180)} onKeyDown={e=>{ if(e.key==='Enter') addMed(); }} placeholder="1+0+1" className="w-full p-3 sm:p-2.5 text-xs border rounded-xl text-center outline-none focus:ring-2 focus:ring-blue-400 bg-white" autoComplete="off" />
+                  {doseResults.length>0 && <div className="absolute left-0 right-0 mt-1 bg-white border rounded-xl shadow-md z-50 max-h-64 overflow-y-auto">{doseResults.map(it=> <button key={it._id} type="button" onMouseDown={e=>{ e.preventDefault(); setMDose(it.dose); setDoseResults([]); }} className="block w-full text-left px-3 py-2.5 sm:py-2 text-xs hover:bg-blue-50 active:bg-blue-100">{it.dose}</button>)}</div>}
+                </div>
+                <input value={mDur} onChange={e=>setMDur(e.target.value)} onKeyDown={e=>{ if(e.key==='Enter') addMed(); }} placeholder="Days" className="sm:col-span-1 p-3 sm:p-1.5 text-xs border rounded-xl text-center bg-white" />
+                <button onClick={addMed} className="sm:col-span-1 h-11 sm:h-auto bg-blue-600 text-white rounded-xl font-bold text-lg sm:text-[24px] hover:bg-blue-700">+</button>
+              </div>
+            </div>
+            <div className="p-3 sm:p-4 bg-slate-50 border-t flex gap-2 shrink-0">
+              <button onClick={()=>setShowRxModal(false)} className="flex-1 py-3 text-[10px] font-black text-slate-400 uppercase">Close</button>
+              <button onClick={()=>setShowRxModal(false)} className="flex-1 py-3 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase hover:bg-blue-700">Done{meds.length > 0 ? ` (${meds.length})` : ''}</button>
+            </div>
           </div>
         </div>
       )}

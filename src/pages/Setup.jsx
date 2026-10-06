@@ -14,7 +14,7 @@ const defaultConfig = { left: ['complaints','history','comorbidity','allergy','f
 
 const ZONE_META = {
   left:   { title: 'Left',   color: 'text-blue-600 bg-blue-50',   dot:'bg-blue-500' },
-  right:  { title: 'Right',  color: 'text-emerald-600 bg-emerald-50', dot:'bg-emerald-500' },
+  right:  { title: 'Right',  color: 'text-blue-600 bg-blue-50', dot:'bg-blue-500' },
   hidden: { title: 'Hidden', color: 'text-slate-500 bg-slate-100', dot:'bg-slate-400' },
 };
 
@@ -117,12 +117,12 @@ export default function Setup(){
         onDragLeave={()=> setCardDragOver(null)}
         onDrop={e=>handleDrop(zone, compId, e)}
         className={`group bg-white border rounded-lg inline-flex items-center gap-1.5 px-2 py-1.5 cursor-grab active:cursor-grabbing select-none transition-all
-          ${isRx?'border-emerald-300 bg-emerald-50/40 cursor-not-allowed':'border-slate-200 hover:border-slate-300 hover:shadow-sm hover:-translate-y-[1px]'}
+          ${isRx?'border-blue-300 bg-blue-50/40 cursor-not-allowed':'border-slate-200 hover:border-slate-300 hover:shadow-sm hover:-translate-y-[1px]'}
           ${isDragging?'opacity-40 scale-95 ring-2 ring-blue-300':''}
           ${isOver?'ring-2 ring-blue-400 -translate-y-0.5':''}
         `}>
         {!isRx && <span className="text-slate-300 group-hover:text-slate-400 cursor-grab text-[10px] leading-none">⋮⋮</span>}
-        <h3 className="text-[9px] font-black uppercase whitespace-nowrap tracking-wider">{name}{isRx && <span className="ml-1.5 text-[6px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full font-black">Fixed</span>}</h3>
+        <h3 className="text-[9px] font-black uppercase whitespace-nowrap tracking-wider">{name}{isRx && <span className="ml-1.5 text-[6px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full font-black">Fixed</span>}</h3>
       </div>
     );
   };
@@ -176,7 +176,7 @@ export default function Setup(){
         <div className="bg-white border-b px-3 sm:px-4 py-2.5 sm:py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 shrink-0">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0"><h1 className="text-sm font-black tracking-tight shrink-0">Layout Editor</h1><span className="text-[10px] font-bold text-slate-400 truncate hidden sm:inline">{doctor?.name}</span></div>
           <div className="flex items-center gap-2 shrink-0">
-            <span id="save-status" className="text-[10px] font-bold text-emerald-600 hidden">Saved</span>
+            <span id="save-status" className="text-[10px] font-bold text-blue-600 hidden">Saved</span>
             <button onClick={saveConfig} className="flex-1 sm:flex-none px-3 sm:px-4 py-2 sm:py-2 rounded-xl sm:rounded-lg bg-blue-600 text-white text-[10px] font-black uppercase shadow-sm hover:bg-blue-700">Save Layout</button>
             <a href={`/prescription/${doctor?._id}`} className="flex-1 sm:flex-none text-center px-3 sm:px-4 py-2 sm:py-2 rounded-xl sm:rounded-lg bg-slate-900 text-white text-[10px] font-black uppercase hover:bg-black">Launch EHR</a>
           </div>
