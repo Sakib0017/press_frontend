@@ -57,6 +57,17 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(config => {
+  // Main admin (NOT a doctor) uses admin_token for /admin/* calls.
+  // Doctor panel keeps using token. This keeps both logins separate.
+  const url = config.url || '';
+  const isAdminCall = url.startsWith('/admin');
+  if (isAdminCall) {
+    const adminToken = localStorage.getItem('admin_token');
+    if (adminToken) {
+      config.headers.Authorization = `Bearer ${adminToken}`;
+      return config;
+    }
+  }
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;

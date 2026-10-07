@@ -37,6 +37,11 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99m0 0h-4.992m4.992 0-3.181-3.183a8.25 8.25 0 0 0-13.803 3.7M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" />
     </svg>
   ),
+  Admin: (props) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+    </svg>
+  ),
 };
 
 const menuItems = [
@@ -47,6 +52,7 @@ const menuItems = [
   { name: 'Setup', url: '/setup', Icon: icons.Setup },
   { name: 'Profile', url: '/profile', Icon: icons.Profile },
   { name: 'Reset', url: '/reset', Icon: icons.Reset },
+  { name: 'Admin', url: '/admin', Icon: icons.Admin },
 ];
 
 export default function Navbar() {
@@ -57,9 +63,9 @@ export default function Navbar() {
         <div className="hidden md:flex p-6 items-center justify-center shrink-0">
           <svg className="w-10 h-10 fill-blue-700" viewBox="0 0 512 512"><path d="M184 48H328c4.4 0 8 3.6 8 8V96H176V56c0-4.4 3.6-8 8-8zm-56 8V96H64C28.7 96 0 124.7 0 160V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V160c0-35.3-28.7-64-64-64H384V56c0-30.9-25.1-56-56-56H184c-30.9 0-56 25.1-56 56zm96 152c0-8.8 7.2-16 16-16h32c8.8 0 16 7.2 16 16v48h48c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H288v48c0 8.8-7.2 16-16 16H240c-8.8 0-16-7.2-16-16V320H176c-8.8 0-16-7.2-16-16V272c0-8.8 7.2-16 16-16h48V208z"></path></svg>
         </div>
-        <nav className="grid grid-cols-7 md:flex md:flex-col flex-1 w-full p-1 md:p-2 gap-0.5 md:gap-1">
+        <nav className="grid grid-cols-8 md:flex md:flex-col flex-1 w-full p-1 md:p-2 gap-0.5 md:gap-1">
           {menuItems.map(item => {
-            const isActive = loc.pathname === item.url || (item.url === '/dashboard' && loc.pathname === '/') ;
+            const isActive = loc.pathname === item.url || (item.url === '/dashboard' && loc.pathname === '/') || (item.url === '/admin' && loc.pathname.startsWith('/admin'));
             const cls = isActive ? 'text-blue-700 border-t-2 md:border-t-0 md:border-l-4 border-blue-700 bg-blue-50/50 md:bg-blue-50' : 'text-slate-400 border-t-2 border-transparent md:border-t-0 md:border-l-4 md:border-transparent hover:text-slate-600 hover:bg-slate-50';
             const Icon = item.Icon;
             return (
