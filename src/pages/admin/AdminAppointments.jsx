@@ -1,6 +1,18 @@
 import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../../utils/api';
+
+const emptyCreate = {
+  patient_name: '',
+  patient_contact: '',
+  patient_age: '',
+  patient_gender: '',
+  doctor_id: '',
+  doctor_name: '',
+  appointment_date: new Date().toISOString().slice(0, 16),
+  status: 'waiting',
+};
 
 export default function AdminAppointments() {
   const [params] = useSearchParams();
@@ -8,9 +20,14 @@ export default function AdminAppointments() {
   const [status, setStatus] = useState(params.get('status') || '');
   const [doctorName, setDoctorName] = useState('');
   const [list, setList] = useState([]);
+  const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [editing, setEditing] = useState(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState(emptyCreate);
+  const [createError, setCreateError] = useState('');
+  const [creating, setCreating] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -30,7 +47,61 @@ export default function AdminAppointments() {
   };
 
   useEffect(() => { setStatus(params.get('status') || ''); }, [params]);
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); loadDoctors(); }, []);
+
+  const loadDoctors = async () => {
+    try {
+      const { data } = await api.get('/admin/doctors');
+      setDoctors(data.data || []);
+    } catch {
+      try {
+        const { data } = await api.get('/doctors');
+        setDoctors(data.data || []);
+      } catch {}
+    }
+  };
+
+  const onDoctorSelect = (id) => {
+    const d = doctors.find((x) => x._id === id);
+    setCreateForm((f) => ({ ...f, doctor_id: id, doctor_name: d ? d.name : f.doctor_name }));
+  };
+
+  const onCreate = async (e) => {
+    e.preventDefault();
+    setCreateError('');
+    const { patient_name, patient_contact, patient_age, patient_gender, doctor_name, appointment_date } = createForm;
+    if (!patient_name.trim() || !patient_contact.trim() || !patient_age.trim() || !patient_gender || !doctor_name.trim() || !appointment_date) {
+      setCreateError('Patient name, contact, age, gender, doctor and date are required.');
+      return;
+    }
+    setCreating(true);
+    try {
+      const payload = {
+        ...createForm,
+        patient_name: createForm.patient_name.trim(),
+        patient_contact: createForm.patient_contact.trim(),
+        appointment_date: new Date(createForm.appointment_date).toISOString(),
+      };
+      let saved;
+      try {
+        const { data } = await api.post('/admin/appointments', payload);
+        saved = data.data;
+      } catch (err) {
+        // Fallback for old backend without POST /api/admin/appointments
+        if (err.response?.status === 404) {
+          const { data } = await api.post('/appointments', payload);
+          saved = data.data || data.appointment;
+        } else throw err;
+      }
+      setList((prev) => [saved, ...prev]);
+      setCreateForm(emptyCreate);
+      setShowCreate(false);
+    } catch (err) {
+      setCreateError(err.response?.data?.message || err.message);
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const setStatusQuick = async (id, s) => {
     try {
@@ -81,7 +152,7 @@ export default function AdminAppointments() {
     <div className="space-y-4">
       <div>
         <h1 className="text-lg font-black text-slate-800 uppercase">Appointments — {list.length}</h1>
-        <p className="text-[11px] text-slate-400 font-bold">GET /api/admin/appointments?q&status&doctor_name · PUT/DELETE /api/admin/appointments/:id · quick status uses PUT /api/appointments/:id/status</p>
+        <p className="text-[11px] text-slate-400 font-bold">GET /api/admin/appointments?q&status&doctor_name · POST /api/admin/appointments · PUT/DELETE /api/admin/appointments/:id · quick status uses PUT /api/appointments/:id/status</p>
       </div>
       <div className="bg-white border border-slate-200 rounded-xl p-3 flex flex-wrap gap-2 items-end">
         <label className="block"><span className="text-[10px] font-bold uppercase text-slate-500">Search (patient/contact/doctor)</span><input value={q} onChange={(e) => setQ(e.target.value)} className="mt-1 border border-slate-300 rounded-lg px-2 py-1.5 text-xs w-52" placeholder="q" /></label>
@@ -93,7 +164,10 @@ export default function AdminAppointments() {
         <label className="block"><span className="text-[10px] font-bold uppercase text-slate-500">Doctor name</span><input value={doctorName} onChange={(e) => setDoctorName(e.target.value)} className="mt-1 border border-slate-300 rounded-lg px-2 py-1.5 text-xs w-44" placeholder="doctor_name" /></label>
         <button onClick={load} className="bg-[#337ab7] text-white text-xs font-bold px-4 py-2 rounded-lg">Search</button>
         <button onClick={() => { setQ(''); setStatus(''); setDoctorName(''); setTimeout(load, 0); }} className="border border-orange-400 text-orange-500 text-xs font-bold px-4 py-2 rounded-lg">Reset</button>
-        <Link to="/patient-reg" className="ml-auto bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-lg">+ New (Patient Reg)</Link>
+        <div className="ml-auto flex gap-2">
+          <button onClick={() => { setCreateError(''); setShowCreate(true); }} className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg">+ New Appointment</button>
+          <Link to="/patient-reg" className="border border-slate-300 text-xs font-bold px-4 py-2 rounded-lg hover:bg-white" title="Old doctor-panel form (kept)">Patient Reg ↗</Link>
+        </div>
       </div>
       {error && <div className="bg-red-50 border border-red-200 text-red-600 text-xs font-bold rounded-lg px-3 py-2">{error}</div>}
       <div className="bg-white border border-slate-200 rounded-xl overflow-x-auto">
@@ -127,6 +201,54 @@ export default function AdminAppointments() {
           </tbody>
         </table>
       </div>
+      {showCreate && (
+        <div className="fixed inset-0 z-[200] bg-black/40 flex items-center justify-center p-4">
+          <form onSubmit={onCreate} className="bg-white rounded-xl p-4 w-full max-w-lg space-y-3 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center gap-2">
+              <div className="font-black uppercase text-sm">New appointment</div>
+              <span className="text-[10px] font-bold text-slate-400">POST /api/admin/appointments → saved to appointments table</span>
+            </div>
+            {createError && <div className="bg-red-50 border border-red-200 text-red-600 text-xs font-bold rounded-lg px-3 py-2">{createError}</div>}
+            <div>
+              <label className="text-[10px] font-black text-slate-500 uppercase block mb-1">Patient Name *</label>
+              <input value={createForm.patient_name} onChange={(e) => setCreateForm({ ...createForm, patient_name: e.target.value })} required placeholder="Full name" className="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-blue-400" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <label className="block"><span className="text-[10px] font-black text-slate-500 uppercase">Mobile / Contact *</span>
+                <input value={createForm.patient_contact} onChange={(e) => setCreateForm({ ...createForm, patient_contact: e.target.value })} required placeholder="01XXXXXXXXX" className="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none" />
+              </label>
+              <label className="block"><span className="text-[10px] font-black text-slate-500 uppercase">Age *</span>
+                <input value={createForm.patient_age} onChange={(e) => setCreateForm({ ...createForm, patient_age: e.target.value })} required placeholder="e.g. 25" className="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none" />
+              </label>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <label className="block"><span className="text-[10px] font-black text-slate-500 uppercase">Gender *</span>
+                <select value={createForm.patient_gender} onChange={(e) => setCreateForm({ ...createForm, patient_gender: e.target.value })} required className="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-xs bg-white outline-none">
+                  <option value="">Select Gender</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option>
+                </select>
+              </label>
+              <label className="block"><span className="text-[10px] font-black text-slate-500 uppercase">Status</span>
+                <select value={createForm.status} onChange={(e) => setCreateForm({ ...createForm, status: e.target.value })} className="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-xs bg-white outline-none">
+                  <option value="waiting">waiting</option><option value="completed">completed</option><option value="cancelled">cancelled</option>
+                </select>
+              </label>
+            </div>
+            <label className="block"><span className="text-[10px] font-black text-slate-500 uppercase">Doctor * (from doctors table)</span>
+              <select value={createForm.doctor_id} onChange={(e) => onDoctorSelect(e.target.value)} required className="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-xs bg-white outline-none">
+                <option value="">Select Doctor</option>
+                {doctors.map((d) => <option key={d._id} value={d._id}>{d.name}{d.usr_spec || d.specialization ? ` (${d.usr_spec || d.specialization})` : ''}</option>)}
+              </select>
+            </label>
+            <label className="block"><span className="text-[10px] font-black text-slate-500 uppercase">Appointment Date *</span>
+              <input type="datetime-local" value={createForm.appointment_date} onChange={(e) => setCreateForm({ ...createForm, appointment_date: e.target.value })} required className="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-xs outline-none" />
+            </label>
+            <div className="flex gap-2 pt-1">
+              <button type="submit" disabled={creating} className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold px-5 py-2 rounded-lg">{creating ? 'Saving…' : 'Save Appointment'}</button>
+              <button type="button" onClick={() => setShowCreate(false)} className="border text-xs font-bold px-5 py-2 rounded-lg">Close</button>
+            </div>
+          </form>
+        </div>
+      )}
       {editing && (
         <div className="fixed inset-0 z-[200] bg-black/40 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl p-4 w-full max-w-lg space-y-2">
