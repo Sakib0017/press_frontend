@@ -5,6 +5,9 @@
 /* Optional: keep same antialiasing as legacy */
 body { -webkit-font-smoothing: antialiased; }
 
+/* Remove all rounded corners app-wide */
+*, *::before, *::after { border-radius: 0 !important; }
+
 /* Mobile helpers */
 html { -webkit-text-size-adjust: 100%; }
 * { -webkit-tap-highlight-color: transparent; }
